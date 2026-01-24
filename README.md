@@ -52,6 +52,7 @@ Services/
 - Docker and Docker Compose installed
 - Cloudflare account with a domain configured
 - Cloudflare Tunnel token (from dashboard)
+- Create the Application Route for the tunnel in Cloudflare
 - Azure Container App running with a public URL
 - Linux server or local machine to run Docker
 
@@ -77,7 +78,6 @@ Services/
    - Verify the tunnel appears in **Access > Tunnels** section of Cloudflare dashboard
 
 4. **Configuration Files**
-   - `config/config.yml` to set domain and Cloudflare ingress rules
    - `proxy/Caddyfile` to point to the Azure Container App URL
 
 5. **Start Services**
