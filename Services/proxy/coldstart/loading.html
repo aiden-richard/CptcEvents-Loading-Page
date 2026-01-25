@@ -115,6 +115,17 @@
                 width: 50px;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            /* Disable continuous animations for users who prefer reduced motion */
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+            .background {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -133,88 +144,47 @@
     </div>
 
     <script>
-        // ============================================
-        // ANIMATION & VISUAL EFFECTS
-        // ============================================
-
-        let animationFrameId;
         let mouseX = window.innerWidth / 2;
         let mouseY = window.innerHeight / 2;
+        let lastMouseMoveTime = 0;
 
-        // Track mouse movement for interactive animation
         document.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
+            lastMouseMoveTime = Date.now();
         });
 
-        // Procedural random animation
         class AnimatedShape {
             constructor(element) {
                 this.element = element;
-                this.startX = parseFloat(element.style.left);
-                this.startY = parseFloat(element.style.top);
-                this.x = this.startX;
-                this.y = this.startY;
-                this.rotation = 0;
-                this.velocityX = 0;
-                this.velocityY = 0;
-                this.baseVx = (Math.random() - 0.5) * 20;
-                this.baseVy = (Math.random() - 0.5) * 20;
-                this.vr = (Math.random() - 0.5) * 3;
-                this.upwardDrift = 15 + Math.random() * 25; // pixels per second upward
-                this.time = 0;
-                this.period = 5 + Math.random() * 10;
-                this.drag = 0.92; // Fluid drag
-                this.mass = 1.0; // Uniform mass
+                this.x = parseFloat(element.style.left);
+                this.y = parseFloat(element.style.top);
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = (Math.random() - 0.5) * 30;
             }
 
             update(deltaTime) {
-                this.time += deltaTime;
+                // Gentle upward float
+                this.y -= 20 * deltaTime;
                 
-                // Base floating motion with gentle noise
-                const t = this.time / this.period;
-                const noise1 = Math.sin(t * Math.PI * 2) * 0.3 + Math.sin(t * Math.PI * 4) * 0.2;
-                const noise2 = Math.cos(t * Math.PI * 2.5) * 0.3 + Math.cos(t * Math.PI * 3.7) * 0.2;
+                // Mouse pull with fade over 5 seconds
+                const timeSinceMouseMove = (Date.now() - lastMouseMoveTime) / 1000;
+                const mousePullStrength = Math.max(0, 1 - timeSinceMouseMove / 5) * 1.5;
                 
-                // Add gentle base movement and stronger upward drift
-                this.velocityX += (this.baseVx * noise1 * deltaTime) * 1.5;
-                this.velocityY += (this.baseVy * noise2 * deltaTime) * 1 - (this.upwardDrift * deltaTime * 5);
-                
-                // Mouse fluid interaction - pull shapes towards cursor
-                const dx = this.x - mouseX;
-                const dy = this.y - mouseY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const interactionRange = 1000;
-                
-                if (distance < interactionRange && distance > 0) {
-                    const falloffFactor = 1 - distance / interactionRange;
-                    const pullStrength = Math.pow(falloffFactor, 2) * (250 / this.mass) * 1.2;
-                    const angle = Math.atan2(dy, dx);
-                    
-                    // Apply force to velocity (physics-based) - negative to pull towards mouse
-                    this.velocityX -= Math.cos(angle) * pullStrength * deltaTime;
-                    this.velocityY -= Math.sin(angle) * pullStrength * deltaTime;
+                if (mousePullStrength > 0) {
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    this.x += dx * 0.02 * mousePullStrength * deltaTime;
+                    this.y += dy * 0.02 * mousePullStrength * deltaTime;
                 }
                 
-                // Apply drag/friction
-                this.velocityX *= this.drag;
-                this.velocityY *= this.drag;
-                
-                // Update position based on velocity
-                this.x += this.velocityX * deltaTime;
-                this.y += this.velocityY * deltaTime;
-                
-                // Reset if shape goes far above screen
-                if (this.y < -500) {
-                    this.x = Math.random() * (window.innerWidth + 200) - 100;
-                    this.y = window.innerHeight / 2 + Math.random() * window.innerHeight;
-                    this.velocityX = 0;
-                    this.velocityY = 0;
-                    this.rotation = 0;
-                    this.time = 0;
+                // Reset to below screen if shape drifts fully above
+                if (this.y < -150) {
+                    this.x = Math.random() * window.innerWidth;
+                    this.y = window.innerHeight + 100;
                 }
                 
-                this.rotation += this.vr * deltaTime * 50;
+                this.rotation += this.rotationSpeed * deltaTime;
                 
                 this.element.style.left = this.x + 'px';
                 this.element.style.top = this.y + 'px';
@@ -222,52 +192,29 @@
             }
         }
 
-        // Create a shape element with styling and add to shapes array
         function createShape(bg, shapeType, shapes) {
             const element = document.createElement('div');
             element.className = `float-shape ${shapeType}`;
             
-            // Random positioning: wider than screen width, and between bottom half and one screen height below
-            const startLeft = Math.random() * (window.innerWidth + 200) - 100;
-            const startTop = window.innerHeight / 2 + Math.random() * window.innerHeight;
+            const startLeft = Math.random() * window.innerWidth;
+            const startTop = Math.random() * window.innerHeight * 2 + window.innerHeight / 2;
             
-            // Random color variation
-            const colors = ['#4f46e5', '#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe'];
+            const colors = ['#4f46e5', '#6366f1', '#818cf8'];
             const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = 60 + Math.random() * 80;
             
-            // 50/50 chance of solid or outline
-            const isSolid = Math.random() < 0.5;
-            
-            // Apply type-specific styling
             if (shapeType === 'circle') {
-                const size = 80 + Math.random() * 120;
                 element.style.width = size + 'px';
                 element.style.height = size + 'px';
-                if (isSolid) {
-                    element.style.background = color;
-                } else {
-                    element.style.border = `2px solid ${color}`;
-                }
+                element.style.border = `2px solid ${color}`;
             } else if (shapeType === 'square') {
-                const size = 40 + Math.random() * 80;
                 element.style.width = size + 'px';
                 element.style.height = size + 'px';
-                if (isSolid) {
-                    element.style.background = color;
-                } else {
-                    element.style.border = `2px solid ${color}`;
-                }
+                element.style.background = color;
             } else if (shapeType === 'triangle') {
-                const size = 40 + Math.random() * 60;
-                const borderColor = isSolid ? color : 'transparent';
-                const borderStyle = isSolid ? `${size}px solid ${color}` : `${size}px solid transparent`;
                 element.style.borderLeft = (size / 2) + 'px solid transparent';
                 element.style.borderRight = (size / 2) + 'px solid transparent';
-                element.style.borderBottom = isSolid ? `${size}px solid ${color}` : `${size}px solid ${color}`;
-                if (!isSolid) {
-                    element.style.borderLeft = (size / 2) + 'px solid transparent';
-                    element.style.borderRight = (size / 2) + 'px solid transparent';
-                }
+                element.style.borderBottom = `${size}px solid ${color}`;
             }
             
             element.style.left = startLeft + 'px';
@@ -276,21 +223,17 @@
             shapes.push(new AnimatedShape(element));
         }
 
-        // Generate subtle background shapes
         function generateBackground() {
             const bg = document.getElementById('background');
+            const numShapes = 10;
             const shapes = [];
-            const shapeTypes = ['circle', 'square', 'triangle'];
-            const shapesPerType = 10;
             
-            // Add shapes of each type
-            shapeTypes.forEach(shapeType => {
-                for (let i = 0; i < shapesPerType; i++) {
-                    createShape(bg, shapeType, shapes);
-                }
-            });
+            for (let i = 0; i < numShapes; i++) {
+                createShape(bg, 'circle', shapes);
+                createShape(bg, 'square', shapes);
+                createShape(bg, 'triangle', shapes);
+            }
 
-            // Animation loop
             let lastTime = Date.now();
             function animate() {
                 const currentTime = Date.now();
@@ -298,22 +241,17 @@
                 lastTime = currentTime;
 
                 shapes.forEach(shape => shape.update(deltaTime));
-                animationFrameId = requestAnimationFrame(animate);
+                requestAnimationFrame(animate);
             }
             animate();
         }
 
-        // ============================================
-        // SERVER HEALTH CHECK & POLLING
-        // ============================================
-
-        const MAX_WAIT_TIME = 300000;
+        const MAX_WAIT_TIME = 60000;
         const CHECK_INTERVAL = 2000;
         const TIMEOUT = 3000;
 
         let startTime = Date.now();
 
-        // Health check function
         function checkServerHealth() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
@@ -325,8 +263,11 @@
             })
                 .then(response => {
                     clearTimeout(timeoutId);
-                    // Consider it ready if we don't get a 502, 503, or 504
-                    return response.status !== 502 && response.status !== 504 && response.status !== 503;
+                    // Server is ready only if we don't have the coldstart header
+                    // and status is not a gateway error
+                    const hasColdstartHeader = response.headers.get('X-Coldstart') === '1';
+                    const isGatewayError = response.status === 502 || response.status === 503 || response.status === 504;
+                    return !hasColdstartHeader && !isGatewayError;
                 })
                 .catch(() => {
                     clearTimeout(timeoutId);
@@ -334,29 +275,27 @@
                 });
         }
 
-        // Main polling loop
         async function pollServer() {
             while (Date.now() - startTime < MAX_WAIT_TIME) {
                 const isReady = await checkServerHealth();
 
                 if (isReady) {
-                    // Delay before reload for smooth visual transition
                     await new Promise(resolve => setTimeout(resolve, 300));
                     window.location.reload();
                     return;
                 }
 
-                // Wait before next attempt
                 await new Promise(resolve => setTimeout(resolve, CHECK_INTERVAL));
             }
         }
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-
         generateBackground();
-        pollServer();
+
+        // Only start polling if not in test mode
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('test')) {
+            pollServer();
+        }
     </script>
 </body>
 </html>
