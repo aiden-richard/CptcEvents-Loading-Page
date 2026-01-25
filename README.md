@@ -37,8 +37,6 @@ README.md                  # this file
 Services/
 ├── .env                     # Cloudflare Tunnel token
 ├── docker-compose.yml       # Docker services configuration
-├── config/
-│   └── config.yml           # Cloudflare Tunnel ingress rules
 └── proxy/
   ├── Caddyfile            # Caddy reverse proxy configuration
   └── coldstart/
