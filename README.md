@@ -51,8 +51,9 @@ Services/
 
 - Docker and Docker Compose installed
 - Cloudflare account with a domain configured
-- Cloudflare Tunnel token (from dashboard)
-- Create the Application Route for the tunnel in Cloudflare
+- Cloudflare Tunnel created in Cloudflare One dashboard (Networks > Tunnels)
+- Cloudflare Tunnel token (obtained from dashboard)
+- Application route configured for the tunnel in Cloudflare
 - Azure Container App running with a public URL
 - Linux server or local machine to run Docker
 
@@ -68,7 +69,7 @@ Services/
    ```
    TOKEN={your_cloudflare_tunnel_token}
    ```
-
+   
 3. **Configure Cloudflare DNS**
    - Log in to Cloudflare dashboard
    - Select your domain
