@@ -1,39 +1,37 @@
-{
-    # Optional: Enable debug mode if you need to troubleshoot connection issues
-    # debug
-}
-
 :80 {
     # Proxy Logic with fallback for coldstart
     reverse_proxy https://cptcevents-app.redforest-3d2b7eff.westus2.azurecontainerapps.io {
-        # Essential for Azure: Pass the correct Host header
+        # Pass the correct Host header
         header_up Host {upstream_hostport}
 
         # Handle the HTTPS connection to Azure
         transport http {
             tls
-            dial_timeout 3s
-            response_header_timeout 3s
+            dial_timeout 2s
+            response_header_timeout 2s
         }
 
-        # Only catch 503 (cold start) - let 502/504 pass through as real errors
+        # Only catch 503 errors
         # 503 = Service Unavailable (Azure returns this during startup)
-        # 502 = Bad Gateway (real app error, don't hide it)
-        # 504 = Gateway Timeout (indicates app problem, not just startup)
         @coldstart status 503
         handle_response @coldstart {
+            header X-Coldstart "1"
             root * /var/www/coldstart
             rewrite * /loading.html
             file_server {
+                # Serve loading page with 200 status, if we don't do this
+                # Cloudflare shows its own error page for 503 responses
                 status 200
             }
         }
     }
 
-    # Error handler for connection failures (timeout, refused)
-    # Return 200 so Cloudflare doesn't intercept with their error page
+    # Error handler for connection failures (timeout, refused during cold start)
+    # These are typically cold start scenarios, not real app errors
+    # Return 200 so Cloudflare serves our loading page instead of their error page
     handle_errors {
         header Content-Type text/html
+        header X-Coldstart "1"
         root * /var/www/coldstart
         rewrite * /loading.html
         file_server {
