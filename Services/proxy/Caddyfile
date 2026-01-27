@@ -7,7 +7,7 @@
         # Add forwarded headers so ASP.NET Core knows the original request details
         header_up X-Forwarded-Host {host}
         header_up X-Forwarded-Proto {scheme}
-        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-For {header.X-Forwarded-For}, {remote_host}
 
         # Handle the HTTPS connection to Azure
         transport http {
