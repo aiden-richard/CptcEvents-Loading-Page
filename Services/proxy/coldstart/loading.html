@@ -274,7 +274,7 @@
 
         function generateBackground() {
             const bg = document.getElementById('background');
-            const NumPerShape = 20;
+            const NUM_PER_SHAPE = 20;
             const shapes = [];
             
             // Create 3 solid stars
@@ -282,7 +282,7 @@
                 createStar(bg, shapes);
             }
             
-            for (let i = 0; i < NumPerShape; i++) {
+            for (let i = 0; i < NUM_PER_SHAPE; i++) {
                 createShape(bg, 'circle', shapes);
                 createShape(bg, 'square', shapes);
                 createShape(bg, 'triangle', shapes);
