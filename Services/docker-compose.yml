@@ -18,4 +18,4 @@ services:
 
 networks:
   CptcEventsNetwork:
-    internal: true
+    external: true
