@@ -174,7 +174,7 @@
                 
                 // Mouse pull with fade over 5 seconds
                 const timeSinceMouseMove = (Date.now() - lastMouseMoveTime) / 1000;
-                const mousePullStrength = Math.max(0, 1 - timeSinceMouseMove / 5) * 1.5;
+                const mousePullStrength = Math.max(0, 1 - timeSinceMouseMove / 5) * 1.2;
                 
                 if (mousePullStrength > 0) {
                     const dx = mouseX - this.x;
@@ -252,18 +252,27 @@
                     element.style.background = 'transparent';
                 }
             } else if (shapeType === 'triangle') {
+                // Use SVG for efficient triangle rendering with proper stroke support
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', size);
+                svg.setAttribute('height', size);
+                svg.style.position = 'absolute';
+                svg.style.overflow = 'visible';
+                
+                const triangle = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                triangle.setAttribute('points', `${size/2},5 ${size-5},${size-5} 5,${size-5}`);
+                
                 if (isSolid) {
-                    element.style.borderLeft = (size / 2) + 'px solid transparent';
-                    element.style.borderRight = (size / 2) + 'px solid transparent';
-                    element.style.borderBottom = `${size}px solid ${color}`;
+                    triangle.setAttribute('fill', color);
+                    triangle.setAttribute('stroke', 'none');
                 } else {
-                    // For outline triangle, create using box-shadow technique
-                    const borderWidth = 2;
-                    element.style.borderLeft = (size / 2) + 'px solid transparent';
-                    element.style.borderRight = (size / 2) + 'px solid transparent';
-                    element.style.borderBottom = `${size}px solid transparent`;
-                    element.style.filter = `drop-shadow(0 0 0 ${color}) drop-shadow(1px 0 0 ${color}) drop-shadow(-1px 0 0 ${color}) drop-shadow(0 1px 0 ${color}) drop-shadow(0 -1px 0 ${color})`;
+                    triangle.setAttribute('fill', 'none');
+                    triangle.setAttribute('stroke', color);
+                    triangle.setAttribute('stroke-width', '2');
                 }
+                
+                svg.appendChild(triangle);
+                element.appendChild(svg);
             }
             
             element.style.left = startLeft + 'px';
