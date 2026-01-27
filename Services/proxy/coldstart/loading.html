@@ -357,7 +357,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (!urlParams.has('test')) {
             await pollServer();
-            alert('The server is taking longer than expected to start. Please try refreshing the page.');
+            if (Date.now() - startTime >= MAX_WAIT_TIME) {
+                alert('The server is taking longer than expected to start. Please try refreshing the page.');
+            }
         }
     </script>
 </body>
