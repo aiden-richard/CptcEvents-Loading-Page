@@ -1,6 +1,6 @@
-# CPTC Events Landing Page & Cold Start Infrastructure
+# CptcEvents Loading Page
 
-A containerized reverse proxy solution to mitigate Azure Container App cold starts for the [CPTC Events](https://github.com/aiden-richard/CptcEvents) web application.
+A containerized reverse proxy solution to mitigate cold start wait times for the [CPTC Events](https://github.com/aiden-richard/CptcEvents) web application.
 
 ## Overview
 
