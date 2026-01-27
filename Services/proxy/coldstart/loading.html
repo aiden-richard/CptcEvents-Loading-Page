@@ -180,7 +180,7 @@
                 // Reset to below screen if shape drifts fully above
                 if (this.y < -150) {
                     this.x = Math.random() * window.innerWidth;
-                    this.y = window.innerHeight + 100;
+                    this.y = window.innerHeight + 100 * (Math.random() + 0.5);
                 }
                 
                 this.rotation += this.rotationSpeed * deltaTime;
