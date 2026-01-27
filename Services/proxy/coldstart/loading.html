@@ -263,10 +263,9 @@
                 .then(response => {
                     clearTimeout(timeoutId);
                     // Server is ready only if we don't have the coldstart header
-                    // and status is not a gateway error
+                    // (Caddy intercepts 503 and returns 200 with X-Coldstart header)
                     const hasColdstartHeader = response.headers.get('X-Coldstart') === '1';
-                    const isGatewayError = response.status === 502 || response.status === 503 || response.status === 504;
-                    return !hasColdstartHeader && !isGatewayError;
+                    return !hasColdstartHeader;
                 })
                 .catch(() => {
                     clearTimeout(timeoutId);
