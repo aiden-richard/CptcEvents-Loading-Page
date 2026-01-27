@@ -1,3 +1,4 @@
+# Production environment
 :80 {
     reverse_proxy https://cptcevents-app.redforest-3d2b7eff.westus2.azurecontainerapps.io {
         # Pass the correct Host header to upstream
