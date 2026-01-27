@@ -1,47 +1,32 @@
-# Production environment
+{
+	servers {
+		# Trust X-Forwarded-* headers from Cloudflare Tunnel (private IP ranges)
+		trusted_proxies static private_ranges
+	}
+}
+
 :80 {
-    reverse_proxy https://cptcevents-app.redforest-3d2b7eff.westus2.azurecontainerapps.io {
-        # Pass the correct Host header to upstream
-        header_up Host {upstream_hostport}
-        
-        # Add forwarded headers so ASP.NET Core knows the original request details
-        header_up X-Forwarded-Host {host}
-        header_up X-Forwarded-Proto {scheme}
-        header_up X-Forwarded-For {header.X-Forwarded-For}, {remote_host}
+	reverse_proxy https://cptcevents-app.redforest-3d2b7eff.westus2.azurecontainerapps.io {
+		# Preserve the original Host header for Azure Container Apps TLS
+		header_up Host {upstream_hostport}
 
-        # Handle the HTTPS connection to Azure
-        transport http {
-            tls
-            dial_timeout 2s
-            response_header_timeout 2s
-        }
+		# Set a 2 second timeout before Caddy throws a 504 Gateway Timeout
+		transport http {
+			tls
+			dial_timeout 2s
+			response_header_timeout 2s
+		}
+	}
 
-        # Cold start handling...
-        @coldstart status 503
-        handle_response @coldstart {
-            header X-Coldstart "1"
-            header Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-            header Pragma "no-cache"
-            header Expires "0"
-            root * /var/www/coldstart
-            rewrite * /loading.html
-            file_server {
-                status 200
-            }
-        }
-    }
-
-    # Error handler...
-    handle_errors {
-        header Content-Type text/html
-        header X-Coldstart "1"
-        header Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-        header Pragma "no-cache"
-        header Expires "0"
-        root * /var/www/coldstart
-        rewrite * /loading.html
-        file_server {
-            status 200
-        }
-    }
+	# Catch 504 timeout errors and serve loading page
+	handle_errors 504 {
+		header Content-Type text/html
+		header X-Coldstart "1"
+		header Cache-Control "no-store"
+		root * /var/www/coldstart
+		rewrite * /loading.html
+		file_server {
+			status 200
+		}
+	}
 }
