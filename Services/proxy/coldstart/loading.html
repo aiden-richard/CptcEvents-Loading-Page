@@ -196,24 +196,46 @@
             element.className = `float-shape ${shapeType}`;
             
             const startLeft = Math.random() * window.innerWidth;
-            const startTop = Math.random() * window.innerHeight * 2 + window.innerHeight / 2;
+            const startTop = Math.random() * (window.innerHeight * 7/6) + window.innerHeight * 5/6;
             
             const colors = ['#4f46e5', '#6366f1', '#818cf8'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             const size = 60 + Math.random() * 80;
+            const isSolid = Math.random() < 0.5; // 50/50 chance
             
             if (shapeType === 'circle') {
                 element.style.width = size + 'px';
                 element.style.height = size + 'px';
-                element.style.border = `2px solid ${color}`;
+                if (isSolid) {
+                    element.style.background = color;
+                    element.style.border = 'none';
+                } else {
+                    element.style.border = `2px solid ${color}`;
+                    element.style.background = 'transparent';
+                }
             } else if (shapeType === 'square') {
                 element.style.width = size + 'px';
                 element.style.height = size + 'px';
-                element.style.background = color;
+                if (isSolid) {
+                    element.style.background = color;
+                    element.style.border = 'none';
+                } else {
+                    element.style.border = `2px solid ${color}`;
+                    element.style.background = 'transparent';
+                }
             } else if (shapeType === 'triangle') {
-                element.style.borderLeft = (size / 2) + 'px solid transparent';
-                element.style.borderRight = (size / 2) + 'px solid transparent';
-                element.style.borderBottom = `${size}px solid ${color}`;
+                if (isSolid) {
+                    element.style.borderLeft = (size / 2) + 'px solid transparent';
+                    element.style.borderRight = (size / 2) + 'px solid transparent';
+                    element.style.borderBottom = `${size}px solid ${color}`;
+                } else {
+                    // For outline triangle, create using box-shadow technique
+                    const borderWidth = 2;
+                    element.style.borderLeft = (size / 2) + 'px solid transparent';
+                    element.style.borderRight = (size / 2) + 'px solid transparent';
+                    element.style.borderBottom = `${size}px solid transparent`;
+                    element.style.filter = `drop-shadow(0 0 0 ${color}) drop-shadow(1px 0 0 ${color}) drop-shadow(-1px 0 0 ${color}) drop-shadow(0 1px 0 ${color}) drop-shadow(0 -1px 0 ${color})`;
+                }
             }
             
             element.style.left = startLeft + 'px';
@@ -224,10 +246,10 @@
 
         function generateBackground() {
             const bg = document.getElementById('background');
-            const numShapes = 10;
+            const NumPerShape = 20;
             const shapes = [];
             
-            for (let i = 0; i < numShapes; i++) {
+            for (let i = 0; i < NumPerShape; i++) {
                 createShape(bg, 'circle', shapes);
                 createShape(bg, 'square', shapes);
                 createShape(bg, 'triangle', shapes);
