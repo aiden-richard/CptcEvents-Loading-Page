@@ -100,6 +100,12 @@
             height: 0;
         }
 
+        .star {
+            display: block;
+            width: 0;
+            height: 0;
+        }
+
         @media (max-width: 600px) {
             .container {
                 gap: 2rem;
@@ -191,6 +197,28 @@
             }
         }
 
+        function createStar(bg, shapes) {
+            const element = document.createElement('div');
+            element.className = 'float-shape star';
+            
+            const startLeft = Math.random() * window.innerWidth;
+            const startTop = window.innerHeight + 50 + Math.random() * 450;
+            
+            const color = '#4338ca'; // Saturated indigo
+            const size = 80;
+            
+            // Create a solid star using clip-path
+            element.style.width = size + 'px';
+            element.style.height = size + 'px';
+            element.style.background = color;
+            element.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            
+            element.style.left = startLeft + 'px';
+            element.style.top = startTop + 'px';
+            bg.appendChild(element);
+            shapes.push(new AnimatedShape(element));
+        }
+
         function createShape(bg, shapeType, shapes) {
             const element = document.createElement('div');
             element.className = `float-shape ${shapeType}`;
@@ -248,6 +276,11 @@
             const bg = document.getElementById('background');
             const NumPerShape = 20;
             const shapes = [];
+            
+            // Create 3 solid stars
+            for (let i = 0; i < 3; i++) {
+                createStar(bg, shapes);
+            }
             
             for (let i = 0; i < NumPerShape; i++) {
                 createShape(bg, 'circle', shapes);
