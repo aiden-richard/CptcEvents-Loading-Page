@@ -27,7 +27,7 @@ Caddy Reverse Proxy (in Docker)
         └─→ Once app ready → User automatically redirected
 ```
 
-When a 502, 503, or 504 error is detected (or connection timeout), Caddy serves the loading page with a 200 status code. The loading page's JavaScript polls the server and automatically reloads once the app is healthy.
+When a 503 error is detected (or connection timeout), Caddy serves the loading page with a 200 status code. The loading page's JavaScript polls the server and automatically reloads once the app is healthy.
 
 ## Repository Structure
 
