@@ -20,6 +20,9 @@
         @coldstart status 503
         handle_response @coldstart {
             header X-Coldstart "1"
+            header Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+            header Pragma "no-cache"
+            header Expires "0"
             root * /var/www/coldstart
             rewrite * /loading.html
             file_server {
@@ -32,6 +35,9 @@
     handle_errors {
         header Content-Type text/html
         header X-Coldstart "1"
+        header Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        header Pragma "no-cache"
+        header Expires "0"
         root * /var/www/coldstart
         rewrite * /loading.html
         file_server {
