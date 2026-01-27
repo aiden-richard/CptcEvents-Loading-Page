@@ -1,13 +1,13 @@
 services:
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.1.2
     container_name: CptcEventsTunnel
     command: tunnel --no-autoupdate run --token ${TOKEN}
     restart: unless-stopped
     networks:
       - CptcEventsNetwork
   reverse-proxy:
-    image: caddy:alpine
+    image: caddy:2.11-alpine
     container_name: CptcEventsProxy
     volumes:
         - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
@@ -18,4 +18,4 @@ services:
 
 networks:
   CptcEventsNetwork:
-    external: true
+    internal: true
