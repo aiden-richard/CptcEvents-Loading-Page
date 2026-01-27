@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        /* Artsy dots animation */
+        .dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4f46e5;
+            animation: pulse-dot 1.8s infinite ease-in-out;
+        }
+
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.3s; }
+        .dot:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes pulse-dot {
+            0%, 100% { 
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .text {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1f2937;
+            letter-spacing: -0.5px;
+            line-height: 1.4;
+            max-width: 280px;
+        }
+
+        /* Floating background elements */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .float-shape {
+            position: absolute;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        .circle {
+            border-radius: 50%;
+            border: 1px solid #4f46e5;
+        }
+
+        .square {
+            background: #6366f1;
+        }
+
+        .triangle {
+            width: 0;
+            height: 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                gap: 2rem;
+                margin: 20px;
+            }
+
+            .text {
+                font-size: 16px;
+                max-width: 240px;
+            }
+
+            .loader {
+                width: 50px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            /* Disable continuous animations for users who prefer reduced motion */
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+            .background {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background" id="background"></div>
+
+    <div class="container">
+        <div>
+            <div class="text">One moment while the app starts up</div>
+        </div>
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <script>
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let lastMouseMoveTime = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            lastMouseMoveTime = Date.now();
+        });
+
+        class AnimatedShape {
+            constructor(element) {
+                this.element = element;
+                this.x = parseFloat(element.style.left);
+                this.y = parseFloat(element.style.top);
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = (Math.random() - 0.5) * 30;
+            }
+
+            update(deltaTime) {
+                // Gentle upward float
+                this.y -= 20 * deltaTime;
+                
+                // Mouse pull with fade over 5 seconds
+                const timeSinceMouseMove = (Date.now() - lastMouseMoveTime) / 1000;
+                const mousePullStrength = Math.max(0, 1 - timeSinceMouseMove / 5) * 1.5;
+                
+                if (mousePullStrength > 0) {
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    this.x += dx * 0.02 * mousePullStrength * deltaTime;
+                    this.y += dy * 0.02 * mousePullStrength * deltaTime;
+                }
+                
+                // Reset to below screen if shape drifts fully above
+                if (this.y < -150) {
+                    this.x = Math.random() * window.innerWidth;
+                    this.y = window.innerHeight + 100;
+                }
+                
+                this.rotation += this.rotationSpeed * deltaTime;
+                
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+                this.element.style.transform = `rotate(${this.rotation}deg)`;
+            }
+        }
+
+        function createShape(bg, shapeType, shapes) {
+            const element = document.createElement('div');
+            element.className = `float-shape ${shapeType}`;
+            
+            const startLeft = Math.random() * window.innerWidth;
+            const startTop = Math.random() * window.innerHeight * 2 + window.innerHeight / 2;
+            
+            const colors = ['#4f46e5', '#6366f1', '#818cf8'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = 60 + Math.random() * 80;
+            
+            if (shapeType === 'circle') {
+                element.style.width = size + 'px';
+                element.style.height = size + 'px';
+                element.style.border = `2px solid ${color}`;
+            } else if (shapeType === 'square') {
+                element.style.width = size + 'px';
+                element.style.height = size + 'px';
+                element.style.background = color;
+            } else if (shapeType === 'triangle') {
+                element.style.borderLeft = (size / 2) + 'px solid transparent';
+                element.style.borderRight = (size / 2) + 'px solid transparent';
+                element.style.borderBottom = `${size}px solid ${color}`;
+            }
+            
+            element.style.left = startLeft + 'px';
+            element.style.top = startTop + 'px';
+            bg.appendChild(element);
+            shapes.push(new AnimatedShape(element));
+        }
+
+        function generateBackground() {
+            const bg = document.getElementById('background');
+            const numShapes = 10;
+            const shapes = [];
+            
+            for (let i = 0; i < numShapes; i++) {
+                createShape(bg, 'circle', shapes);
+                createShape(bg, 'square', shapes);
+                createShape(bg, 'triangle', shapes);
+            }
+
+            let lastTime = Date.now();
+            function animate() {
+                const currentTime = Date.now();
+                const deltaTime = (currentTime - lastTime) / 1000;
+                lastTime = currentTime;
+
+                shapes.forEach(shape => shape.update(deltaTime));
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        const MAX_WAIT_TIME = 60000;
+        const CHECK_INTERVAL = 2000;
+        const TIMEOUT = 3000;
+
+        let startTime = Date.now();
+
+        function checkServerHealth() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
+
+            return fetch('/', {
+                method: 'HEAD',
+                signal: controller.signal,
+                cache: 'no-store'
+            })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    // Server is ready only if we don't have the coldstart header
+                    // and status is not a gateway error
+                    const hasColdstartHeader = response.headers.get('X-Coldstart') === '1';
+                    const isGatewayError = response.status === 502 || response.status === 503 || response.status === 504;
+                    return !hasColdstartHeader && !isGatewayError;
+                })
+                .catch(() => {
+                    clearTimeout(timeoutId);
+                    return false;
+                });
+        }
+
+        async function pollServer() {
+            while (Date.now() - startTime < MAX_WAIT_TIME) {
+                const isReady = await checkServerHealth();
+
+                if (isReady) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    window.location.reload();
+                    return;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, CHECK_INTERVAL));
+            }
+        }
+
+        generateBackground();
+
+        // Only start polling if not in test mode
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('test')) {
+            pollServer();
+        }
+    </script>
+</body>
+</html>

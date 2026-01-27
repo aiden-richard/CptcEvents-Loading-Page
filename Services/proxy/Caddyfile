@@ -1,0 +1,41 @@
+# Production environment
+:80 {
+    reverse_proxy https://cptcevents-app.redforest-3d2b7eff.westus2.azurecontainerapps.io {
+        # Pass the correct Host header to upstream
+        header_up Host {upstream_hostport}
+        
+        # Add forwarded headers so ASP.NET Core knows the original request details
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-For {header.X-Forwarded-For}, {remote_host}
+
+        # Handle the HTTPS connection to Azure
+        transport http {
+            tls
+            dial_timeout 2s
+            response_header_timeout 2s
+        }
+
+        # Cold start handling...
+        @coldstart status 503
+        handle_response @coldstart {
+            header X-Coldstart "1"
+            root * /var/www/coldstart
+            rewrite * /loading.html
+            file_server {
+                status 200
+            }
+        }
+    }
+
+    # Error handler...
+    handle_errors {
+        header Content-Type text/html
+        header X-Coldstart "1"
+        root * /var/www/coldstart
+        rewrite * /loading.html
+        file_server {
+            status 200
+        }
+    }
+}

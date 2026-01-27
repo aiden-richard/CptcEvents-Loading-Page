@@ -37,8 +37,6 @@ README.md                  # this file
 Services/
 ├── .env                     # Cloudflare Tunnel token
 ├── docker-compose.yml       # Docker services configuration
-├── config/
-│   └── config.yml           # Cloudflare Tunnel ingress rules
 └── proxy/
   ├── Caddyfile            # Caddy reverse proxy configuration
   └── coldstart/
@@ -51,7 +49,9 @@ Services/
 
 - Docker and Docker Compose installed
 - Cloudflare account with a domain configured
-- Cloudflare Tunnel token (from dashboard)
+- Cloudflare Tunnel created in Cloudflare One dashboard (Networks > Tunnels)
+- Cloudflare Tunnel token (obtained from dashboard)
+- Application route configured for the tunnel in Cloudflare
 - Azure Container App running with a public URL
 - Linux server or local machine to run Docker
 
@@ -67,7 +67,7 @@ Services/
    ```
    TOKEN={your_cloudflare_tunnel_token}
    ```
-
+   
 3. **Configure Cloudflare DNS**
    - Log in to Cloudflare dashboard
    - Select your domain
@@ -77,7 +77,6 @@ Services/
    - Verify the tunnel appears in **Access > Tunnels** section of Cloudflare dashboard
 
 4. **Configuration Files**
-   - `config/config.yml` to set domain and Cloudflare ingress rules
    - `proxy/Caddyfile` to point to the Azure Container App URL
 
 5. **Start Services**
