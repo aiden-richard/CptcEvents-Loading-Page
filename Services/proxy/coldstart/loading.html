@@ -326,8 +326,10 @@
             })
                 .then(response => {
                     clearTimeout(timeoutId);
+                    // Treat non-2xx responses (like 504) as not ready
+                    if (!response.ok) return false;
                     // Server is ready only if we don't have the coldstart header
-                    // (Caddy intercepts 503 and returns 200 with X-Coldstart header)
+                    // (Caddy may intercept and return 200 with X-Coldstart header)
                     const hasColdstartHeader = response.headers.get('X-Coldstart') === '1';
                     return !hasColdstartHeader;
                 })
